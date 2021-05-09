@@ -11,7 +11,7 @@ function App() {
   let [currentUser, setCurrentUser] = useState<firebase.User | null>(null);
 
   useEffect(() => {
-    setCurrentUser(getCurrentUser);
+    setCurrentUser(getCurrentUser());
   }, [loginStatus]);
 
   let handleLogout = () => {
