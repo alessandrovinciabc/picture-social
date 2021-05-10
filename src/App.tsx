@@ -1,10 +1,14 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import './setupFirebase';
 import firebase from 'firebase/app';
 
 import useLoginStatus from './firebase/hooks/auth';
 import { logout, getCurrentUser, login } from './firebase/auth';
+
+import Header from './components/Header';
+
+import GlobalStyle from './globalStyles';
 
 function App() {
   let loginStatus = useLoginStatus();
@@ -23,22 +27,14 @@ function App() {
   };
 
   return (
-    <div>
-      {currentUser ? (
-        <>
-          <img src={currentUser.photoURL!} alt="" />
-          <br />
-          {currentUser.displayName}
-          <br />
-        </>
-      ) : (
-        false
-      )}
-      Login status: {loginStatus ? 'true' : 'false'}
-      <br />
-      {loginStatus && <button onClick={handleLogout}>Logout</button>}
-      {!loginStatus && <button onClick={handleLogin}>Login</button>}
-    </div>
+    <>
+      <GlobalStyle />
+      <Header
+        logged={loginStatus}
+        user={currentUser}
+        handlers={{ login: handleLogin, logout: handleLogout }}
+      />
+    </>
   );
 }
 
