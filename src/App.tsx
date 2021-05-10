@@ -9,6 +9,8 @@ import { logout, getCurrentUser, login } from './firebase/auth';
 import Header from './components/Header';
 
 import GlobalStyle from './globalStyles';
+import { BrowserRouter, Switch, Route } from 'react-router-dom';
+import Profile from './pages/Profile';
 
 function App() {
   let loginStatus = useLoginStatus();
@@ -28,12 +30,19 @@ function App() {
 
   return (
     <>
-      <GlobalStyle />
-      <Header
-        logged={loginStatus}
-        user={currentUser}
-        handlers={{ login: handleLogin, logout: handleLogout }}
-      />
+      <BrowserRouter>
+        <Route path="/">
+          <GlobalStyle />
+          <Header
+            logged={loginStatus}
+            user={currentUser}
+            handlers={{ login: handleLogin, logout: handleLogout }}
+          />
+        </Route>
+        <Switch>
+          <Route path="/:profile" exact component={Profile} />
+        </Switch>
+      </BrowserRouter>
     </>
   );
 }

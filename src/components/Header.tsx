@@ -4,6 +4,7 @@ import React from 'react';
 import styled, { AnyStyledComponent } from 'styled-components';
 
 import { IconHome, IconCompass } from '@tabler/icons';
+import { useHistory } from 'react-router-dom';
 
 let HeaderContainer = styled.div`
   display: flex;
@@ -15,8 +16,9 @@ let HeaderContainer = styled.div`
   height: 3.5rem;
 `;
 
-let ProfileIcon = styled.div`
-  background: url(${(props: { icon: string }) => `${props.icon}`});
+let ProfileIcon: AnyStyledComponent = styled.img.attrs((props: any) => ({
+  src: props.icon,
+}))`
   background-size: cover;
   border-radius: 100%;
   height: 30px;
@@ -73,13 +75,36 @@ const Header: React.FC<{
   user: firebase.User | null;
   logged: boolean;
 }> = (props) => {
+  let history = useHistory();
   let { user, handlers, logged } = props;
+
+  function goto(str: string) {
+    history.push(str);
+  }
   return (
     <HeaderContainer>
-      <HomeIcon />
-      <CompassIcon />
+      <HomeIcon
+        onClick={() => {
+          goto('/');
+        }}
+      />
+      <CompassIcon
+        onClick={() => {
+          goto('/explore');
+        }}
+      />
       <LoginContainer>
-        {user ? <ProfileIcon icon={user.photoURL!} /> : false}
+        {user ? (
+          <ProfileIcon
+            icon={user.photoURL!}
+            referrerPolicy="no-referrer"
+            onClick={() => {
+              goto(`/${user!.uid}`);
+            }}
+          />
+        ) : (
+          false
+        )}
         {logged && <LogButton onClick={handlers.logout}>Logout</LogButton>}
         {!logged && <LogButton onClick={handlers.login}>Login</LogButton>}
       </LoginContainer>
