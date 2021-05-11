@@ -4,8 +4,8 @@ import post from '../firebase/post';
 
 import firebase from 'firebase/app';
 
-import Post from '../components/post/Post';
 import PostAddForm from '../components/post/PostAddForm';
+import PostGrid from '../components/post/PostGrid';
 
 function Profile(
   props: React.PropsWithoutRef<{
@@ -18,11 +18,20 @@ function Profile(
   let [wasUpdated, setWasUpdated] = useState(false);
 
   useEffect(() => {
+    let isUnmounting = false;
     let getPostsAndSetState = async () => {
-      setPosts(await post.getPosts(profileId));
+      let newPosts = await post.getPosts(profileId);
+
+      if (!isUnmounting) {
+        setPosts(newPosts);
+      }
     };
 
     getPostsAndSetState();
+
+    return () => {
+      isUnmounting = true;
+    };
   }, [profileId, wasUpdated]);
 
   let submitHandler: FormEventHandler<HTMLFormElement> = (e) => {
@@ -51,17 +60,7 @@ function Profile(
       {profileId}
       <br />
       <PostAddForm submitHandler={submitHandler} />
-      <div style={{ display: 'flex', flexWrap: 'wrap', marginTop: '2rem' }}>
-        {posts &&
-          posts.length > 0 &&
-          posts.map((post, index) => (
-            <Post
-              isOwner={props.currentUser === post.ownerId}
-              key={index}
-              post={post}
-            />
-          ))}
-      </div>
+      <PostGrid posts={posts} />
     </div>
   );
 }
