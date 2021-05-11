@@ -48,9 +48,11 @@ function Profile(
       {profileId}
       <br />
       <PostAddForm submitHandler={submitHandler} />
-      {posts &&
-        posts.length > 0 &&
-        posts.map((post, index) => <Post key={index} post={post} />)}
+      <div style={{ display: 'flex', flexWrap: 'wrap', marginTop: '2rem' }}>
+        {posts &&
+          posts.length > 0 &&
+          posts.map((post, index) => <Post key={index} post={post} />)}
+      </div>
     </div>
   );
 }
