@@ -8,7 +8,10 @@ import Post from '../components/post/Post';
 import PostAddForm from '../components/post/PostAddForm';
 
 function Profile(
-  props: React.PropsWithoutRef<{ match: { params: { profile: string } } }>
+  props: React.PropsWithoutRef<{
+    match: { params: { profile: string } };
+    currentUser: string;
+  }>
 ) {
   let profileId = props.match.params.profile;
   let [posts, setPosts] = useState<firebase.firestore.DocumentData[]>([]);
@@ -51,7 +54,13 @@ function Profile(
       <div style={{ display: 'flex', flexWrap: 'wrap', marginTop: '2rem' }}>
         {posts &&
           posts.length > 0 &&
-          posts.map((post, index) => <Post key={index} post={post} />)}
+          posts.map((post, index) => (
+            <Post
+              isOwner={props.currentUser === post.ownerId}
+              key={index}
+              post={post}
+            />
+          ))}
       </div>
     </div>
   );

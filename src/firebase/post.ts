@@ -1,7 +1,7 @@
 import firebase from 'firebase/app';
 
 let db = firebase.firestore();
-let storageRef = firebase.storage().ref();
+let storage = firebase.storage();
 
 interface PostObject extends firebase.firestore.DocumentData {
   ownerId: string;
@@ -28,6 +28,8 @@ async function getPosts(uid: string) {
 }
 
 async function uploadImage(file: File, postId: string) {
+  let storageRef = storage.ref();
+
   let extension = file.type.replace('image/', '');
   let ref = storageRef.child(`${postId}.${extension}`);
 
@@ -66,7 +68,29 @@ async function uploadImageAndSendPost(uid: string, file: File, text: string) {
   await updatePost(postRef, img, text);
 }
 
-let defaultExport = { getPosts, uploadImageAndSendPost };
+async function deleteImage(url: string) {
+  let imageRef = storage.refFromURL(url);
+  imageRef.delete();
+}
+
+async function deletePost(ownerId: string, postId: string) {
+  let postRef = db
+    .collection('user')
+    .doc(ownerId)
+    .collection('post')
+    .doc(postId);
+
+  let post = await postRef.get();
+
+  let postData = post.data();
+  if (postData == null) return;
+  let url = postData.img;
+
+  await deleteImage(url);
+  await postRef.delete();
+}
+
+let defaultExport = { getPosts, uploadImageAndSendPost, deletePost };
 
 export default defaultExport;
 

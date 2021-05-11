@@ -40,7 +40,13 @@ function App() {
           />
         </Route>
         <Switch>
-          <Route path="/:profile" exact component={Profile} />
+          <Route
+            path="/:profile"
+            exact
+            component={(props: any) => (
+              <Profile {...props} currentUser={currentUser?.uid} />
+            )}
+          />
         </Switch>
       </BrowserRouter>
     </>

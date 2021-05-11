@@ -5,6 +5,7 @@ let db = firebase.firestore();
 interface UserProfile extends firebase.firestore.DocumentData {
   photoURL: string;
   displayName: string;
+  uid: string;
 }
 
 async function saveUserDetailsToDB(user: firebase.User) {
@@ -16,6 +17,7 @@ async function saveUserDetailsToDB(user: firebase.User) {
         profile: {
           photoURL: user.photoURL,
           displayName: user.displayName,
+          uid: user.uid,
         },
       },
       { merge: true }
