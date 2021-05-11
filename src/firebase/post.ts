@@ -11,6 +11,22 @@ interface PostObject extends firebase.firestore.DocumentData {
   timestamp: firebase.firestore.Timestamp;
 }
 
+async function getPost(id: string) {
+  let postRefObj = await db.collection('post').doc(id).get();
+  let ownerId = postRefObj.data()?.ownerId;
+
+  if (ownerId == null) return;
+
+  let actualPost = await db
+    .collection('user')
+    .doc(ownerId)
+    .collection('post')
+    .doc(id)
+    .get();
+
+  return actualPost.data();
+}
+
 async function getPosts(uid: string) {
   let querySnapshot = await db
     .collection('user')
@@ -99,7 +115,7 @@ async function deletePost(ownerId: string, postId: string) {
   await postRef.delete();
 }
 
-let defaultExport = { getPosts, uploadImageAndSendPost, deletePost };
+let defaultExport = { getPost, getPosts, uploadImageAndSendPost, deletePost };
 
 export default defaultExport;
 

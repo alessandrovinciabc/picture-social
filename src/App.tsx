@@ -10,7 +10,9 @@ import Header from './components/Header';
 
 import GlobalStyle from './globalStyles';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
+
 import Profile from './pages/Profile';
+import PostView from './pages/PostView';
 
 function App() {
   let loginStatus = useLoginStatus();
@@ -40,6 +42,13 @@ function App() {
           />
         </Route>
         <Switch>
+          <Route
+            path="/p/:postId"
+            exact
+            component={(props: any) => (
+              <PostView {...props} currentUser={currentUser?.uid} />
+            )}
+          />
           <Route
             path="/:profile"
             exact
