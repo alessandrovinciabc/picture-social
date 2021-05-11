@@ -3,6 +3,14 @@ import firebase from 'firebase/app';
 let db = firebase.firestore();
 let storageRef = firebase.storage().ref();
 
+interface PostObject extends firebase.firestore.DocumentData {
+  ownerId: string;
+  postId: string;
+  img: string;
+  text: string;
+  timestamp: firebase.firestore.Timestamp;
+}
+
 async function getPosts(uid: string) {
   let querySnapshot = await db
     .collection('user')
@@ -29,7 +37,11 @@ async function uploadImage(file: File, postId: string) {
 }
 
 async function createPost(uid: string) {
-  return db.collection('user').doc(uid).collection('post').add({});
+  return db
+    .collection('user')
+    .doc(uid)
+    .collection('post')
+    .add({ ownerId: uid });
 }
 
 async function updatePost(
@@ -40,6 +52,7 @@ async function updatePost(
   return await ref.update({
     img: imgUrl,
     text,
+    postId: ref.id,
     timestamp: firebase.firestore.Timestamp.now(),
   });
 }
@@ -56,3 +69,5 @@ async function uploadImageAndSendPost(uid: string, file: File, text: string) {
 let defaultExport = { getPosts, uploadImageAndSendPost };
 
 export default defaultExport;
+
+export type { PostObject };

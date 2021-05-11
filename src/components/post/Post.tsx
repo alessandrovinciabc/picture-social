@@ -5,6 +5,12 @@ import styled from 'styled-components';
 import { IconDots } from '@tabler/icons';
 import userIconPlaceholder from '../../assets/images/user-icon-placeholder.png';
 
+import { getUser, UserProfile } from '../../firebase/user';
+import { useEffect, useState } from 'react';
+
+//Type definitions
+import { PostObject } from '../../firebase/post';
+
 let PostContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -37,6 +43,10 @@ let UserIcon = styled.img`
 
 let ProfileName = styled.a`
   font-weight: bold;
+
+  width: 200px;
+
+  overflow: hidden;
 `;
 
 let PostTopSection = styled.div`
@@ -80,16 +90,29 @@ let PostImage = styled.img`
 `;
 
 const Post: React.FC<{
-  post: { img: string; text: string } | firebase.firestore.DocumentData;
+  post: PostObject | firebase.firestore.DocumentData;
 }> = (props) => {
   let { post } = props;
+  let [user, setUser] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    let getUserAndSetState = async () => {
+      let user = await getUser(post.ownerId);
+
+      if (user) {
+        setUser(user);
+      }
+    };
+
+    getUserAndSetState();
+  }, [post]);
 
   return (
     <PostContainer>
       <PostTopSection>
         <ProfileSection>
-          <UserIcon src={userIconPlaceholder} />
-          <ProfileName>Test</ProfileName>
+          <UserIcon src={user ? user.photoURL : userIconPlaceholder} />
+          <ProfileName>{user ? user.displayName : null}</ProfileName>
         </ProfileSection>
         <OptionsIcon />
       </PostTopSection>

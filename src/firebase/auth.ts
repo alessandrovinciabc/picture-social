@@ -8,10 +8,6 @@ async function login(
   callback?: (userData: firebase.User) => void
 ): Promise<void> {
   await auth.signInWithRedirect(google);
-
-  let { user } = await auth.getRedirectResult();
-
-  if (user) callback?.(user);
 }
 
 function logout() {

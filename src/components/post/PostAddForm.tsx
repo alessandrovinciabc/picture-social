@@ -6,7 +6,7 @@ const PostAddForm: React.FC<{
   return (
     <form onSubmit={submitHandler}>
       <input type="file" name="file" required />
-      <textarea autoComplete="off" name="text" required />
+      <textarea autoComplete="off" name="text" />
       <button>Send new post</button>
     </form>
   );
