@@ -39,11 +39,18 @@ async function uploadImage(file: File, postId: string) {
 }
 
 async function createPost(uid: string) {
-  return db
+  let newPost = await db.collection('post').add({ ownerId: uid });
+  let newId = newPost.id;
+
+  let newPostInsideUserRef = db
     .collection('user')
     .doc(uid)
     .collection('post')
-    .add({ ownerId: uid });
+    .doc(newId);
+
+  newPostInsideUserRef.set({ ownerId: uid });
+
+  return newPostInsideUserRef;
 }
 
 async function updatePost(
@@ -74,6 +81,8 @@ async function deleteImage(url: string) {
 }
 
 async function deletePost(ownerId: string, postId: string) {
+  await db.collection('post').doc(postId).delete();
+
   let postRef = db
     .collection('user')
     .doc(ownerId)
