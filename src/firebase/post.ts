@@ -72,6 +72,42 @@ async function addComment(postId: string, userId: string, text: string) {
   });
 }
 
+async function deleteComment(postId: string, commentId: string) {
+  let commentRef = db
+    .collection('post')
+    .doc(postId)
+    .collection('comments')
+    .doc(commentId);
+
+  await commentRef.delete();
+}
+
+async function getComments(postId: string) {
+  let postRef = db.collection('post').doc(postId);
+  let commentsRef = postRef.collection('comments');
+
+  let comments = await commentsRef.get();
+
+  let resultOfQuery: firebase.firestore.DocumentData[] = [];
+  comments.forEach(async (comment) => {
+    let commentData = comment.data();
+
+    let userThatCommented = await db
+      .collection('user')
+      .doc(commentData.ownerId)
+      .get();
+
+    let nameOfCommenter = userThatCommented.data()?.profile.displayName;
+    resultOfQuery.push({
+      ...commentData,
+      displayName: nameOfCommenter,
+      commentId: comment.id,
+    });
+  });
+
+  return resultOfQuery;
+}
+
 async function uploadImageAndSendPost(uid: string, file: File, text: string) {
   let postRef = await createPost(uid);
   let postId = postRef.id;
@@ -89,6 +125,7 @@ async function deleteImage(url: string) {
 async function deletePost(postId: string) {
   let postRef = db.collection('post').doc(postId);
   let likes = postRef.collection('likes');
+  let comments = postRef.collection('comments');
 
   let post = await postRef.get();
 
@@ -97,6 +134,12 @@ async function deletePost(postId: string) {
   let url = postData.img;
 
   await likes.get().then((snapshot) => {
+    snapshot.forEach((doc) => {
+      doc.ref.delete();
+    });
+  });
+
+  await comments.get().then((snapshot) => {
     snapshot.forEach((doc) => {
       doc.ref.delete();
     });
@@ -156,6 +199,8 @@ let defaultExport = {
   getLikeStatus,
   getLikesCount,
   addComment,
+  deleteComment,
+  getComments,
 };
 
 export default defaultExport;

@@ -6,13 +6,14 @@ import { IconDots, IconHeart, IconMessage2 } from '@tabler/icons';
 import userIconPlaceholder from '../../assets/images/user-icon-placeholder.png';
 
 import { getUser, UserProfile } from '../../firebase/user';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import posts from '../../firebase/post';
 
 //Type definitions
 import { PostObject } from '../../firebase/post';
 import Button from '../Button';
+import { useHistory } from 'react-router';
 
 let PostContainer = styled.div`
   display: flex;
@@ -253,28 +254,65 @@ let ConfirmComment = styled(Button)`
   }
 `;
 
+let DeleteCommentBtn = styled(Button)`
+  display: inline-block;
+  height: 16px;
+  width: 16px;
+
+  padding: 0;
+
+  vertical-align: middle;
+
+  position: relative;
+  &:after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    content: 'X';
+    color: #ed3333;
+  }
+`;
+
+let CommentText = styled.span``;
+
 const Post: React.FC<{
   post: PostObject | firebase.firestore.DocumentData;
   isOwner: boolean;
   viewerId: string;
 }> = (props) => {
   let { post } = props;
+
   let [likeStatus, setLikeStatus] = useState(false);
   let [likeCount, setLikeCount] = useState(0);
   let [wasUpdated, setWasUpdated] = useState(true);
+
   let [user, setUser] = useState<UserProfile | null>(null);
+  let [viewer, setViewer] = useState<UserProfile | null>(null);
+
   let [viewOptions, setViewOptions] = useState(false);
+
   let [viewCommentSection, setViewCommentSection] = useState(false);
+  let [comments, setComments] = useState<firebase.firestore.DocumentData[]>([]);
+  let [commentInput, setCommentInput] = useState('');
+
+  let history = useHistory();
 
   useEffect(() => {
     let isUnmounting = false;
     let getUserAndSetState = async () => {
       let user = await getUser(post.ownerId);
+      let viewer = await getUser(props.viewerId);
 
       if (isUnmounting) return;
 
       if (user) {
         setUser(user);
+      }
+
+      if (viewer) {
+        setViewer(viewer);
       }
     };
 
@@ -283,7 +321,7 @@ const Post: React.FC<{
     return () => {
       isUnmounting = true;
     };
-  }, [post]);
+  }, [post, props.viewerId]);
 
   useEffect(() => {
     let isUnmounting = false;
@@ -308,6 +346,23 @@ const Post: React.FC<{
     };
   }, [post, user, props.viewerId, wasUpdated]);
 
+  useEffect(() => {
+    let isUnmounting = false;
+
+    let getCommentsAndSetState = async () => {
+      let newComments = await posts.getComments(post.postId);
+
+      if (isUnmounting) return;
+      setComments(newComments);
+    };
+
+    getCommentsAndSetState();
+
+    return () => {
+      isUnmounting = true;
+    };
+  }, [post]);
+
   let onOptionsClick = () => {
     setViewOptions((prev) => {
       return !prev;
@@ -327,6 +382,35 @@ const Post: React.FC<{
 
   let onCommentIconClick = () => {
     setViewCommentSection((prev) => !prev);
+  };
+
+  let handleCommentInput: React.ChangeEventHandler<HTMLTextAreaElement> = (
+    e
+  ) => {
+    setCommentInput(e.target.value);
+  };
+
+  let handleCommentAdd: React.FormEventHandler<HTMLFormElement> = async (e) => {
+    e.preventDefault();
+
+    let newId = await posts.addComment(
+      post.postId,
+      props.viewerId,
+      commentInput
+    );
+
+    setComments((prev) => {
+      let copy = JSON.parse(JSON.stringify(prev));
+      copy.push({
+        displayName: viewer?.displayName,
+        ownerId: viewer?.uid,
+        text: commentInput,
+        commentId: newId,
+      });
+
+      return copy;
+    });
+    setCommentInput('');
   };
 
   return (
@@ -367,16 +451,27 @@ const Post: React.FC<{
         <PostText>{post.text}</PostText>
         {viewCommentSection && (
           <CommentSection>
-            <Comment>
-              <CommentProfileName>Alessandro Vinci</CommentProfileName>
-              This is an example of a comment
-            </Comment>
-            <Comment>
-              <CommentProfileName>Alessandro Vinci</CommentProfileName>
-              Another one
-            </Comment>
-            <CommentForm>
-              <FormText />
+            {comments.map((comment) => (
+              <Comment key={comment.commentId}>
+                <CommentProfileName
+                  onClick={() => {
+                    history.push(`/${comment.ownerId}`);
+                  }}
+                >
+                  {comment.displayName}
+                </CommentProfileName>
+                <CommentText>
+                  {comment.text} <DeleteCommentBtn />
+                </CommentText>
+              </Comment>
+            ))}
+            <CommentForm onSubmit={handleCommentAdd}>
+              <FormText
+                value={commentInput}
+                onChange={handleCommentInput}
+                max-length="1"
+                required
+              />
               <ConfirmComment>Post</ConfirmComment>
             </CommentForm>
           </CommentSection>
