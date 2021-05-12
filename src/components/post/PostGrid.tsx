@@ -15,10 +15,17 @@ let Container = styled.div`
 
 let Grid = styled.div`
   display: flex;
-  justify-content: center;
   flex-wrap: wrap;
 
-  width: calc(250px * 3 + 6rem);
+  width: calc(250px * 3 + (8px * 2) * 3);
+
+  @media only screen and (max-width: 860px) {
+    width: calc(250px * 2 + (8px * 2) * 2);
+  }
+
+  @media only screen and (max-width: 550px) {
+    width: calc(250px * 1 + (8px * 2) * 1);
+  }
 `;
 
 let PostContainer = styled.div`
