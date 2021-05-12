@@ -2,7 +2,7 @@ import firebase from 'firebase/app';
 
 import styled from 'styled-components';
 
-import { IconDots } from '@tabler/icons';
+import { IconDots, IconHeart, IconMessage2 } from '@tabler/icons';
 import userIconPlaceholder from '../../assets/images/user-icon-placeholder.png';
 
 import { getUser, UserProfile } from '../../firebase/user';
@@ -67,6 +67,8 @@ let PostTopSection = styled.div`
 let PostBottomSection = styled.div`
   display: flex;
 
+  flex-direction: column;
+
   width: 100%;
   flex-grow: 1;
 
@@ -126,6 +128,74 @@ let PostImage = styled.img`
   border-radius: 2px;
 `;
 
+let Controls = styled.div`
+  position: relative;
+  display: flex;
+
+  width: 100%;
+`;
+
+let Like = styled.div`
+  height: 31px;
+  width: 31px;
+
+  cursor: pointer;
+`;
+
+let LikeIcon = styled(IconHeart)`
+  position: relative;
+  height: 30px;
+  width: 30px;
+
+  stroke: ${(props: { active: boolean }) =>
+    props.active ? '#ed3333' : 'black'};
+
+  fill: ${(props: { active: boolean }) =>
+    props?.active ? '#ed3333' : 'white'};
+
+  stroke-width: 1;
+`;
+
+let LikeCounter = styled.div`
+  height: 25px;
+  width: 25px;
+
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translate(-50%, -50%);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &::after {
+    content: ${(props: { active: boolean; count: number }) =>
+      props.count ? `"${props.count}"` : '"0"'};
+
+    font-size: 0.7rem;
+    color: ${(props: { active: boolean; count: number }) =>
+      props.active ? 'white' : 'black'};
+  }
+`;
+
+let CommentIcon = styled(IconMessage2)`
+  height: 30px;
+  width: 30px;
+
+  stroke: black;
+  stroke-width: 1;
+
+  cursor: pointer;
+`;
+
+let PostText = styled.div`
+  display: flex;
+
+  margin-top: 5px;
+  margin-left: 3px;
+`;
+
 const Post: React.FC<{
   post: PostObject | firebase.firestore.DocumentData;
   isOwner: boolean;
@@ -151,6 +221,9 @@ const Post: React.FC<{
       return !prev;
     });
   };
+
+  let active = true;
+  let likeCount = 99;
 
   return (
     <PostContainer>
@@ -179,7 +252,16 @@ const Post: React.FC<{
         ) : null}
       </PostTopSection>
       <PostImage src={post.img} alt="" />
-      <PostBottomSection>{post.text}</PostBottomSection>
+      <PostBottomSection>
+        <Controls>
+          <Like>
+            <LikeIcon active={active} />
+            <LikeCounter active={active} count={likeCount} />
+          </Like>
+          <CommentIcon />
+        </Controls>
+        <PostText>{post.text}</PostText>
+      </PostBottomSection>
     </PostContainer>
   );
 };
