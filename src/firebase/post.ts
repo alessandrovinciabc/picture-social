@@ -115,7 +115,56 @@ async function deletePost(ownerId: string, postId: string) {
   await postRef.delete();
 }
 
-let defaultExport = { getPost, getPosts, uploadImageAndSendPost, deletePost };
+async function getLikeStatus(userId: string, postId: string) {
+  let likeRef = db
+    .collection('post')
+    .doc(postId)
+    .collection('likes')
+    .doc(userId);
+
+  let likeSnapshot = await likeRef.get();
+
+  if (likeSnapshot.exists) return true;
+  return false;
+}
+
+async function getLikesCount(postId: string) {
+  let postLikesRef = db.collection('post').doc(postId).collection('likes');
+
+  let postLikesData = await postLikesRef.get();
+  let count = postLikesData.size;
+
+  return count;
+}
+
+async function togglePostLike(userId: string, postId: string) {
+  let likeRef = db
+    .collection('post')
+    .doc(postId)
+    .collection('likes')
+    .doc(userId);
+
+  let likeSnapshot = await likeRef.get();
+
+  if (likeSnapshot.exists) {
+    await likeRef.delete();
+    return false;
+  }
+
+  await likeRef.set({ userId, postId });
+
+  return true;
+}
+
+let defaultExport = {
+  getPost,
+  getPosts,
+  uploadImageAndSendPost,
+  deletePost,
+  togglePostLike,
+  getLikeStatus,
+  getLikesCount,
+};
 
 export default defaultExport;
 

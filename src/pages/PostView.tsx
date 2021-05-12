@@ -46,7 +46,11 @@ function PostView(
   return (
     <ViewContainer>
       {post && (
-        <Post isOwner={props.currentUser === post.ownerId} post={post} />
+        <Post
+          isOwner={props.currentUser === post.ownerId}
+          post={post}
+          viewerId={props.currentUser}
+        />
       )}
     </ViewContainer>
   );

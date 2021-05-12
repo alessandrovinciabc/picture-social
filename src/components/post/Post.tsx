@@ -147,11 +147,11 @@ let LikeIcon = styled(IconHeart)`
   height: 30px;
   width: 30px;
 
-  stroke: ${(props: { active: boolean }) =>
-    props.active ? '#ed3333' : 'black'};
+  stroke: ${(props: { 'data-active': boolean }) =>
+    props['data-active'] ? '#ed3333' : 'black'};
 
-  fill: ${(props: { active: boolean }) =>
-    props?.active ? '#ed3333' : 'white'};
+  fill: ${(props: { 'data-active': boolean }) =>
+    props['data-active'] ? '#ed3333' : 'white'};
 
   stroke-width: 1;
 `;
@@ -170,12 +170,12 @@ let LikeCounter = styled.div`
   align-items: center;
 
   &::after {
-    content: ${(props: { active: boolean; count: number }) =>
+    content: ${(props: { 'data-active': boolean; count: number }) =>
       props.count ? `"${props.count}"` : '"0"'};
 
     font-size: 0.7rem;
-    color: ${(props: { active: boolean; count: number }) =>
-      props.active ? 'white' : 'black'};
+    color: ${(props: { 'data-active': boolean; count: number }) =>
+      props['data-active'] ? 'white' : 'black'};
   }
 `;
 
@@ -199,14 +199,21 @@ let PostText = styled.div`
 const Post: React.FC<{
   post: PostObject | firebase.firestore.DocumentData;
   isOwner: boolean;
+  viewerId: string;
 }> = (props) => {
   let { post } = props;
+  let [likeStatus, setLikeStatus] = useState(false);
+  let [likeCount, setLikeCount] = useState(0);
+  let [wasUpdated, setWasUpdated] = useState(true);
   let [user, setUser] = useState<UserProfile | null>(null);
   let [viewOptions, setViewOptions] = useState(false);
 
   useEffect(() => {
+    let isUnmounting = false;
     let getUserAndSetState = async () => {
       let user = await getUser(post.ownerId);
+
+      if (isUnmounting) return;
 
       if (user) {
         setUser(user);
@@ -214,7 +221,34 @@ const Post: React.FC<{
     };
 
     getUserAndSetState();
+
+    return () => {
+      isUnmounting = true;
+    };
   }, [post]);
+
+  useEffect(() => {
+    let isUnmounting = false;
+    if (!wasUpdated) return;
+    if (user == null) return;
+
+    let getLikeStatusAndSetState = async () => {
+      let status = await posts.getLikeStatus(props.viewerId, post.postId);
+      let count = await posts.getLikesCount(post.postId);
+
+      if (isUnmounting) return;
+
+      setLikeStatus(status);
+      setLikeCount(count);
+      setWasUpdated(false);
+    };
+
+    getLikeStatusAndSetState();
+
+    return () => {
+      isUnmounting = true;
+    };
+  }, [post, user, props.viewerId, wasUpdated]);
 
   let onOptionsClick = () => {
     setViewOptions((prev) => {
@@ -222,8 +256,16 @@ const Post: React.FC<{
     });
   };
 
-  let active = true;
-  let likeCount = 99;
+  let onLike = () => {
+    if (props.viewerId == null) return;
+    let toggleLikeAndSetState = async () => {
+      await posts.togglePostLike(props.viewerId, post.postId);
+
+      setWasUpdated(true);
+    };
+
+    toggleLikeAndSetState();
+  };
 
   return (
     <PostContainer>
@@ -254,9 +296,9 @@ const Post: React.FC<{
       <PostImage src={post.img} alt="" />
       <PostBottomSection>
         <Controls>
-          <Like>
-            <LikeIcon active={active} />
-            <LikeCounter active={active} count={likeCount} />
+          <Like onClick={onLike}>
+            <LikeIcon data-active={likeStatus} />
+            <LikeCounter data-active={likeStatus} count={likeCount} />
           </Like>
           <CommentIcon />
         </Controls>
