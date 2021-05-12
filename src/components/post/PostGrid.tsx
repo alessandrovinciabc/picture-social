@@ -15,6 +15,7 @@ let Container = styled.div`
 
 let Grid = styled.div`
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
 
   width: calc(250px * 3 + 6rem);
