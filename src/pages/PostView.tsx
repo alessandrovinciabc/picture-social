@@ -28,11 +28,19 @@ function PostView(
   let [post, setPost] = useState<firebase.firestore.DocumentData | undefined>();
 
   useEffect(() => {
+    let isUnmounting = false;
+
     let getPostAndSetState = async () => {
-      setPost(await posts.getPost(postId));
+      let newPost = await posts.getPost(postId);
+      if (isUnmounting) return;
+      setPost(newPost);
     };
 
     getPostAndSetState();
+
+    return () => {
+      isUnmounting = true;
+    };
   }, [postId]);
 
   return (
