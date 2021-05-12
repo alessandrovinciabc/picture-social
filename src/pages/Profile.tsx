@@ -11,6 +11,7 @@ import styled from 'styled-components';
 import { getUser } from '../firebase/user';
 
 import userIconPlaceholder from '../assets/images/user-icon-placeholder.png';
+import Button from '../components/Button';
 
 let Container = styled.div``;
 
@@ -51,24 +52,10 @@ let Counts = styled.div`
   font-size: 0.8rem;
 `;
 
-let AddPostButton = styled.button`
-  display: block;
-  padding: 0.5rem 1rem;
-
-  background-color: white;
-  border: 2px solid black;
-  border-radius: 2px;
-
+let AddPostButton = styled(Button)`
   width: 110px;
   margin: 0 auto;
   margin-top: 1rem;
-
-  &:hover {
-    background-color: black;
-    color: white;
-
-    cursor: pointer;
-  }
 
   &:hover::after {
     content: ' +';

@@ -12,6 +12,7 @@ import posts from '../../firebase/post';
 
 //Type definitions
 import { PostObject } from '../../firebase/post';
+import Button from '../Button';
 
 let PostContainer = styled.div`
   display: flex;
@@ -51,6 +52,7 @@ let ProfileName = styled.a`
   width: 200px;
 
   overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 let PostTopSection = styled.div`
@@ -190,10 +192,65 @@ let CommentIcon = styled(IconMessage2)`
 `;
 
 let PostText = styled.div`
-  display: flex;
+  display: block;
 
   margin-top: 5px;
   margin-left: 3px;
+  margin-right: 3px;
+
+  word-break: break-word;
+`;
+
+let CommentSection = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  border-top: 1px solid rgba(0, 0, 0, 0.2);
+  margin: 5px 3px;
+`;
+
+let Comment = styled.div`
+  margin: 5px 0;
+`;
+let CommentProfileName = styled.span`
+  font-size: 0.9rem;
+  font-weight: bold;
+
+  &:after {
+    content: ' ';
+  }
+`;
+
+let CommentForm = styled.form`
+  padding-top: 5px;
+
+  border-top: 1px solid rgba(0, 0, 0, 0.2);
+
+  display: flex;
+  align-items: center;
+`;
+
+let FormText = styled.textarea`
+  resize: none;
+
+  width: 293px;
+
+  height: 48px;
+`;
+
+let ConfirmComment = styled(Button)`
+  height: max-content;
+  width: max-content;
+
+  border: none;
+  margin-left: 5px;
+
+  color: #0074d9;
+
+  &:hover {
+    color: #0074d9;
+    background-color: white;
+  }
 `;
 
 const Post: React.FC<{
@@ -207,6 +264,7 @@ const Post: React.FC<{
   let [wasUpdated, setWasUpdated] = useState(true);
   let [user, setUser] = useState<UserProfile | null>(null);
   let [viewOptions, setViewOptions] = useState(false);
+  let [viewCommentSection, setViewCommentSection] = useState(false);
 
   useEffect(() => {
     let isUnmounting = false;
@@ -267,6 +325,10 @@ const Post: React.FC<{
     toggleLikeAndSetState();
   };
 
+  let onCommentIconClick = () => {
+    setViewCommentSection((prev) => !prev);
+  };
+
   return (
     <PostContainer>
       <PostTopSection>
@@ -300,9 +362,25 @@ const Post: React.FC<{
             <LikeIcon data-active={likeStatus} />
             <LikeCounter data-active={likeStatus} count={likeCount} />
           </Like>
-          <CommentIcon />
+          <CommentIcon onClick={onCommentIconClick} />
         </Controls>
         <PostText>{post.text}</PostText>
+        {viewCommentSection && (
+          <CommentSection>
+            <Comment>
+              <CommentProfileName>Alessandro Vinci</CommentProfileName>
+              This is an example of a comment
+            </Comment>
+            <Comment>
+              <CommentProfileName>Alessandro Vinci</CommentProfileName>
+              Another one
+            </Comment>
+            <CommentForm>
+              <FormText />
+              <ConfirmComment>Post</ConfirmComment>
+            </CommentForm>
+          </CommentSection>
+        )}
       </PostBottomSection>
     </PostContainer>
   );

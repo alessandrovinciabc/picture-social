@@ -82,6 +82,17 @@ async function updatePost(
   });
 }
 
+async function addComment(postId: string, userId: string, text: string) {
+  let postCommentsRef = db
+    .collection('user')
+    .doc(userId)
+    .collection('post')
+    .doc(postId)
+    .collection('comments');
+
+  postCommentsRef.add({ ownerId: userId, text });
+}
+
 async function uploadImageAndSendPost(uid: string, file: File, text: string) {
   let postRef = await createPost(uid);
   let postId = postRef.id;
@@ -164,6 +175,7 @@ let defaultExport = {
   togglePostLike,
   getLikeStatus,
   getLikesCount,
+  addComment,
 };
 
 export default defaultExport;
