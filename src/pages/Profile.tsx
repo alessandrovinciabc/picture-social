@@ -77,7 +77,7 @@ function Profile(
   useEffect(() => {
     let isUnmounting = false;
     let getPostsAndSetState = async () => {
-      let newPosts = await post.getPosts(profileId);
+      let newPosts = await post.getPostsForUser(profileId);
       let newUser = await getUser(profileId);
 
       if (!isUnmounting) {

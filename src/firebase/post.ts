@@ -12,31 +12,17 @@ interface PostObject extends firebase.firestore.DocumentData {
 }
 
 async function getPost(id: string) {
-  let postRefObj = await db.collection('post').doc(id).get();
-  let ownerId = postRefObj.data()?.ownerId;
+  let postSnapshot = await db.collection('post').doc(id).get();
 
-  if (ownerId == null) return;
-
-  let actualPost = await db
-    .collection('user')
-    .doc(ownerId)
-    .collection('post')
-    .doc(id)
-    .get();
-
-  return actualPost.data();
+  return postSnapshot.data();
 }
 
-async function getPosts(uid: string) {
-  let querySnapshot = await db
-    .collection('user')
-    .doc(uid)
-    .collection('post')
-    .orderBy('timestamp')
-    .get();
+async function getPostsForUser(uid: string) {
+  let queryRef = db.collection('post').where('ownerId', '==', uid);
+  let resultOfQuery = await queryRef.get();
 
   let posts: {}[] = [];
-  querySnapshot.forEach((snap) => {
+  resultOfQuery.forEach((snap) => {
     posts.push(snap.data());
   });
 
@@ -55,18 +41,12 @@ async function uploadImage(file: File, postId: string) {
 }
 
 async function createPost(uid: string) {
-  let newPost = await db.collection('post').add({ ownerId: uid });
-  let newId = newPost.id;
+  let newPostRef = await db.collection('post').add({ ownerId: uid });
 
-  let newPostInsideUserRef = db
-    .collection('user')
-    .doc(uid)
-    .collection('post')
-    .doc(newId);
+  let newId = newPostRef.id;
+  await newPostRef.update({ postId: newId });
 
-  newPostInsideUserRef.set({ ownerId: uid });
-
-  return newPostInsideUserRef;
+  return newPostRef;
 }
 
 async function updatePost(
@@ -83,14 +63,13 @@ async function updatePost(
 }
 
 async function addComment(postId: string, userId: string, text: string) {
-  let postCommentsRef = db
-    .collection('user')
-    .doc(userId)
-    .collection('post')
-    .doc(postId)
-    .collection('comments');
+  let commentsRef = db.collection('post').doc(postId).collection('comments');
 
-  postCommentsRef.add({ ownerId: userId, text });
+  return await commentsRef.add({
+    ownerId: userId,
+    text,
+    timestamp: firebase.firestore.Timestamp.now(),
+  });
 }
 
 async function uploadImageAndSendPost(uid: string, file: File, text: string) {
@@ -107,20 +86,21 @@ async function deleteImage(url: string) {
   imageRef.delete();
 }
 
-async function deletePost(ownerId: string, postId: string) {
-  await db.collection('post').doc(postId).delete();
-
-  let postRef = db
-    .collection('user')
-    .doc(ownerId)
-    .collection('post')
-    .doc(postId);
+async function deletePost(postId: string) {
+  let postRef = db.collection('post').doc(postId);
+  let likes = postRef.collection('likes');
 
   let post = await postRef.get();
 
   let postData = post.data();
   if (postData == null) return;
   let url = postData.img;
+
+  await likes.get().then((snapshot) => {
+    snapshot.forEach((doc) => {
+      doc.ref.delete();
+    });
+  });
 
   await deleteImage(url);
   await postRef.delete();
@@ -169,7 +149,7 @@ async function togglePostLike(userId: string, postId: string) {
 
 let defaultExport = {
   getPost,
-  getPosts,
+  getPostsForUser,
   uploadImageAndSendPost,
   deletePost,
   togglePostLike,

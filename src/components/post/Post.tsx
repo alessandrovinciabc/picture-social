@@ -343,7 +343,7 @@ const Post: React.FC<{
               <OptionsDialog
                 onClick={() => {
                   if (user) {
-                    posts.deletePost(user.uid, post.postId).then(() => {
+                    posts.deletePost(post.postId).then(() => {
                       window.location.reload();
                     });
                   }
