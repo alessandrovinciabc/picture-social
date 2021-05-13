@@ -443,7 +443,11 @@ const Post: React.FC<{
   return (
     <PostContainer>
       <PostTopSection>
-        <ProfileSection>
+        <ProfileSection
+          onClick={() => {
+            history.push(`/${user!.uid}`);
+          }}
+        >
           <UserIcon src={user ? user.photoURL : userIconPlaceholder} />
           <ProfileName>{user ? user.displayName : null}</ProfileName>
         </ProfileSection>
