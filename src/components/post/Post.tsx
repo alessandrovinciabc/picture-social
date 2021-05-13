@@ -217,6 +217,8 @@ let CommentProfileName = styled.span`
   font-size: 0.9rem;
   font-weight: bold;
 
+  cursor: pointer;
+
   &:after {
     content: ' ';
   }
@@ -262,6 +264,7 @@ let DeleteCommentBtn = styled(Button)`
   padding: 0;
 
   vertical-align: middle;
+  border: none;
 
   position: relative;
   &:after {
@@ -270,12 +273,17 @@ let DeleteCommentBtn = styled(Button)`
     left: 50%;
     transform: translate(-50%, -50%);
 
+    font-size: 0.7rem;
+    font-weight: bold;
+
     content: 'X';
     color: #ed3333;
   }
 `;
 
-let CommentText = styled.span``;
+let CommentText = styled.span`
+  word-break: break-word;
+`;
 
 const Post: React.FC<{
   post: PostObject | firebase.firestore.DocumentData;
@@ -393,11 +401,13 @@ const Post: React.FC<{
   let handleCommentAdd: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
 
-    let newId = await posts.addComment(
+    let newPostRef = await posts.addComment(
       post.postId,
       props.viewerId,
       commentInput
     );
+
+    let newId = newPostRef.id;
 
     setComments((prev) => {
       let copy = JSON.parse(JSON.stringify(prev));
@@ -411,6 +421,23 @@ const Post: React.FC<{
       return copy;
     });
     setCommentInput('');
+  };
+
+  let handleCommentDelete: React.MouseEventHandler<HTMLButtonElement> = (e) => {
+    let button = e.target as HTMLButtonElement;
+
+    let commentId = button.dataset.commentid!;
+
+    posts.deleteComment(post.postId, commentId);
+
+    setComments((prev) => {
+      let copy = JSON.parse(JSON.stringify(prev));
+      let filtered = copy.filter(
+        (el: firebase.firestore.DocumentData) => el.commentId !== commentId
+      );
+
+      return filtered;
+    });
   };
 
   return (
@@ -460,9 +487,13 @@ const Post: React.FC<{
                 >
                   {comment.displayName}
                 </CommentProfileName>
-                <CommentText>
-                  {comment.text} <DeleteCommentBtn />
-                </CommentText>
+                <CommentText>{comment.text} </CommentText>
+                {props.viewerId === post.ownerId ? (
+                  <DeleteCommentBtn
+                    onClick={handleCommentDelete}
+                    data-commentid={comment.commentId}
+                  />
+                ) : null}
               </Comment>
             ))}
             <CommentForm onSubmit={handleCommentAdd}>
