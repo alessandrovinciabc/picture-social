@@ -13,6 +13,7 @@ import { BrowserRouter, Switch, Route } from 'react-router-dom';
 
 import Profile from './pages/Profile';
 import PostView from './pages/PostView';
+import Explore from './pages/Explore';
 
 function App() {
   let loginStatus = useLoginStatus();
@@ -49,6 +50,7 @@ function App() {
               <PostView {...props} currentUser={currentUser?.uid} />
             )}
           />
+          <Route path="/explore" exact component={Explore} />
           <Route
             path="/:profile"
             exact

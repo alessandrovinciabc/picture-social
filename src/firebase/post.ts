@@ -18,11 +18,25 @@ async function getPost(id: string) {
 }
 
 async function getPostsForUser(uid: string) {
-  let queryRef = db.collection('post').where('ownerId', '==', uid);
+  let queryRef = db
+    .collection('post')
+    .where('ownerId', '==', uid)
+    .orderBy('timestamp');
   let resultOfQuery = await queryRef.get();
 
   let posts: {}[] = [];
   resultOfQuery.forEach((snap) => {
+    posts.push(snap.data());
+  });
+
+  return posts;
+}
+
+async function getAllPosts() {
+  let querySnapshot = await db.collection('post').orderBy('timestamp').get();
+
+  let posts: firebase.firestore.DocumentData[] = [];
+  querySnapshot.forEach((snap) => {
     posts.push(snap.data());
   });
 
@@ -86,7 +100,7 @@ async function getComments(postId: string) {
   let postRef = db.collection('post').doc(postId);
   let commentsRef = postRef.collection('comments');
 
-  let comments = await commentsRef.get();
+  let comments = await commentsRef.orderBy('timestamp').get();
 
   let resultOfQuery: firebase.firestore.DocumentData[] = [];
   comments.forEach(async (comment) => {
@@ -193,6 +207,7 @@ async function togglePostLike(userId: string, postId: string) {
 let defaultExport = {
   getPost,
   getPostsForUser,
+  getAllPosts,
   uploadImageAndSendPost,
   deletePost,
   togglePostLike,
