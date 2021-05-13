@@ -13,6 +13,15 @@ interface PostObject extends firebase.firestore.DocumentData {
 
 const MAX_AMOUNT_OF_FETCHES = 9;
 
+async function getNumberOfPosts(userId: string) {
+  let snapshot = await db
+    .collection('post')
+    .where('ownerId', '==', userId)
+    .get();
+
+  return snapshot.size;
+}
+
 async function getPost(id: string) {
   let postSnapshot = await db.collection('post').doc(id).get();
 
@@ -238,6 +247,7 @@ async function togglePostLike(userId: string, postId: string) {
 }
 
 let defaultExport = {
+  getNumberOfPosts,
   getPost,
   getPostsForUser,
   getAllPosts,

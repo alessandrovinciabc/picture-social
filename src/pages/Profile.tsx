@@ -76,15 +76,21 @@ function Profile(
 
   let [canLoadMore, setCanLoadMore] = useState(true);
 
+  let [postCount, setPostCount] = useState(0);
+
   useEffect(() => {
     let isUnmounting = false;
     let getPostsAndSetState = async () => {
       let newPosts = await post.getPostsForUser(profileId);
       let newUser = await getUser(profileId);
 
+      let newPostCount = await post.getNumberOfPosts(profileId);
+
       if (!isUnmounting) {
         setPosts(newPosts);
         setUser(newUser);
+
+        setPostCount(newPostCount);
       }
     };
 
@@ -142,7 +148,7 @@ function Profile(
           <ProfileDetails>
             <Name>{user?.displayName}</Name>
             <Counts>
-              {0} posts
+              {postCount} posts
               <br /> {0} followers
               <br /> {0} following
             </Counts>
