@@ -13,7 +13,10 @@ import { getUser } from '../firebase/user';
 import userIconPlaceholder from '../assets/images/user-icon-placeholder.png';
 import Button from '../components/Button';
 
-let Container = styled.div``;
+let Container = styled.div`
+  overflow: auto;
+  height: calc(100vh - 3.5rem);
+`;
 
 let ProfileSection = styled.div`
   display: flex;
@@ -74,6 +77,8 @@ function Profile(
   let [wasUpdated, setWasUpdated] = useState(false);
   let [addFormVisibility, setAddFormVisibility] = useState(false);
 
+  let [canLoadMore, setCanLoadMore] = useState(true);
+
   useEffect(() => {
     let isUnmounting = false;
     let getPostsAndSetState = async () => {
@@ -114,8 +119,35 @@ function Profile(
     target.reset();
   };
 
+  let handleScroll: React.UIEventHandler<HTMLDivElement> = async (e) => {
+    if (!canLoadMore) return;
+
+    let container = e.target as HTMLDivElement;
+    let sensitivity = 2; //px
+
+    //height of the viewable element
+    //               +
+    //distance from top to topmost viewable content
+    let sum = container.offsetHeight + container.scrollTop;
+
+    //scrollHeight is the total height of the element
+    if (sum >= container.scrollHeight - sensitivity) {
+      let lastPostId = posts[posts.length - 1].postId as string;
+      let lastPostSnapshot = await post.getPost(lastPostId);
+      if (!lastPostSnapshot) return;
+
+      let newPostsToAdd = await post.getPostsForUser(
+        profileId,
+        lastPostSnapshot
+      );
+
+      if (!newPostsToAdd.length) setCanLoadMore(false);
+      else setPosts((prev) => [...prev, ...newPostsToAdd]);
+    }
+  };
+
   return (
-    <Container>
+    <Container onScroll={handleScroll}>
       <ProfileSection>
         <ProfileGroup>
           <ProfileIcon src={user ? user.photoURL : userIconPlaceholder} />

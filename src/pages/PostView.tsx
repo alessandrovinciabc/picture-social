@@ -33,7 +33,7 @@ function PostView(
     let getPostAndSetState = async () => {
       let newPost = await posts.getPost(postId);
       if (isUnmounting) return;
-      setPost(newPost);
+      setPost(newPost.data());
     };
 
     getPostAndSetState();

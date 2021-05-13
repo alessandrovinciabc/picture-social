@@ -14,14 +14,30 @@ interface PostObject extends firebase.firestore.DocumentData {
 async function getPost(id: string) {
   let postSnapshot = await db.collection('post').doc(id).get();
 
-  return postSnapshot.data();
+  return postSnapshot;
 }
 
-async function getPostsForUser(uid: string) {
-  let queryRef = db
-    .collection('post')
-    .where('ownerId', '==', uid)
-    .orderBy('timestamp');
+async function getPostsForUser(
+  uid: string,
+  startAfter?: firebase.firestore.DocumentSnapshot
+) {
+  let queryRef;
+
+  if (startAfter) {
+    queryRef = db
+      .collection('post')
+      .where('ownerId', '==', uid)
+      .orderBy('timestamp', 'desc')
+      .startAfter(startAfter)
+      .limit(6);
+  } else {
+    queryRef = db
+      .collection('post')
+      .where('ownerId', '==', uid)
+      .orderBy('timestamp', 'desc')
+      .limit(6);
+  }
+
   let resultOfQuery = await queryRef.get();
 
   let posts: {}[] = [];
