@@ -12,6 +12,7 @@ import { getUser } from '../firebase/user';
 
 import userIconPlaceholder from '../assets/images/user-icon-placeholder.png';
 import Button from '../components/Button';
+import handleScroll from '../helper/scroll';
 
 let Container = styled.div`
   overflow: auto;
@@ -119,35 +120,23 @@ function Profile(
     target.reset();
   };
 
-  let handleScroll: React.UIEventHandler<HTMLDivElement> = async (e) => {
-    if (!canLoadMore) return;
+  let scrollCallback = async () => {
+    let lastPostId = posts[posts.length - 1].postId as string;
+    let lastPostSnapshot = await post.getPost(lastPostId);
+    if (!lastPostSnapshot) return;
 
-    let container = e.target as HTMLDivElement;
-    let sensitivity = 2; //px
+    let newPostsToAdd = await post.getPostsForUser(profileId, lastPostSnapshot);
 
-    //height of the viewable element
-    //               +
-    //distance from top to topmost viewable content
-    let sum = container.offsetHeight + container.scrollTop;
-
-    //scrollHeight is the total height of the element
-    if (sum >= container.scrollHeight - sensitivity) {
-      let lastPostId = posts[posts.length - 1].postId as string;
-      let lastPostSnapshot = await post.getPost(lastPostId);
-      if (!lastPostSnapshot) return;
-
-      let newPostsToAdd = await post.getPostsForUser(
-        profileId,
-        lastPostSnapshot
-      );
-
-      if (!newPostsToAdd.length) setCanLoadMore(false);
-      else setPosts((prev) => [...prev, ...newPostsToAdd]);
-    }
+    if (!newPostsToAdd.length) setCanLoadMore(false);
+    else setPosts((prev) => [...prev, ...newPostsToAdd]);
   };
 
   return (
-    <Container onScroll={handleScroll}>
+    <Container
+      onScroll={(e) => {
+        handleScroll(e, canLoadMore, scrollCallback);
+      }}
+    >
       <ProfileSection>
         <ProfileGroup>
           <ProfileIcon src={user ? user.photoURL : userIconPlaceholder} />
