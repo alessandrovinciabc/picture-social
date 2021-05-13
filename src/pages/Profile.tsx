@@ -13,6 +13,7 @@ import { getUser } from '../firebase/user';
 import userIconPlaceholder from '../assets/images/user-icon-placeholder.png';
 import Button from '../components/Button';
 import handleScroll from '../helper/scroll';
+import BlueButton from '../components/BlueButton';
 
 let Container = styled.div`
   overflow: auto;
@@ -62,6 +63,10 @@ let AddPostButton = styled(Button)`
   margin-top: 1rem;
 `;
 
+let FollowControl = styled(BlueButton)`
+  margin: 15px auto;
+`;
+
 function Profile(
   props: React.PropsWithoutRef<{
     match: { params: { profile: string } };
@@ -77,6 +82,8 @@ function Profile(
   let [canLoadMore, setCanLoadMore] = useState(true);
 
   let [postCount, setPostCount] = useState(0);
+
+  let [alreadyFollowing, setAlreadyFollowing] = useState(false);
 
   useEffect(() => {
     let isUnmounting = false;
@@ -152,6 +159,11 @@ function Profile(
               <br /> {0} followers
               <br /> {0} following
             </Counts>
+            {user?.uid !== props.currentUser && (
+              <FollowControl>
+                {alreadyFollowing ? 'Unfollow' : 'Follow'}
+              </FollowControl>
+            )}
           </ProfileDetails>
         </ProfileGroup>
       </ProfileSection>
