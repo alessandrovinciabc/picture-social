@@ -8,7 +8,13 @@ import PostAddForm from '../components/post/PostAddForm';
 import PostGrid from '../components/post/PostGrid';
 
 import styled from 'styled-components';
-import { getUser } from '../firebase/user';
+import {
+  getFollowStatus,
+  getNumberOfFollowers,
+  getNumberOfFollowings,
+  getUser,
+  toggleFollow,
+} from '../firebase/user';
 
 import userIconPlaceholder from '../assets/images/user-icon-placeholder.png';
 import Button from '../components/Button';
@@ -82,22 +88,34 @@ function Profile(
   let [canLoadMore, setCanLoadMore] = useState(true);
 
   let [postCount, setPostCount] = useState(0);
+  let [nOfFollowers, setNOfFollowers] = useState(0);
+  let [nOfFollowings, setNOfFollowings] = useState(0);
 
   let [alreadyFollowing, setAlreadyFollowing] = useState(false);
 
   useEffect(() => {
     let isUnmounting = false;
+    if (props.currentUser == null) return;
+
     let getPostsAndSetState = async () => {
       let newPosts = await post.getPostsForUser(profileId);
       let newUser = await getUser(profileId);
 
       let newPostCount = await post.getNumberOfPosts(profileId);
+      let newFollowerCount = await getNumberOfFollowers(profileId);
+      let newFollowingCount = await getNumberOfFollowings(profileId);
+
+      let isFollowing = await getFollowStatus(props.currentUser, profileId);
 
       if (!isUnmounting) {
         setPosts(newPosts);
         setUser(newUser);
 
         setPostCount(newPostCount);
+        setNOfFollowers(newFollowerCount);
+        setNOfFollowings(newFollowingCount);
+
+        setAlreadyFollowing(isFollowing);
       }
     };
 
@@ -106,7 +124,7 @@ function Profile(
     return () => {
       isUnmounting = true;
     };
-  }, [profileId, wasUpdated]);
+  }, [profileId, wasUpdated, props.currentUser]);
 
   let submitHandler: FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
@@ -143,6 +161,18 @@ function Profile(
     else setPosts((prev) => [...prev, ...newPostsToAdd]);
   };
 
+  let handleFollowClick = () => {
+    toggleFollow(props.currentUser, profileId);
+    setAlreadyFollowing((prev) => {
+      if (prev) {
+        setNOfFollowers((prev) => prev - 1);
+      } else {
+        setNOfFollowers((prev) => prev + 1);
+      }
+      return !prev;
+    });
+  };
+
   return (
     <Container
       onScroll={(e) => {
@@ -156,11 +186,11 @@ function Profile(
             <Name>{user?.displayName}</Name>
             <Counts>
               {postCount} posts
-              <br /> {0} followers
-              <br /> {0} following
+              <br /> {nOfFollowers} followers
+              <br /> {nOfFollowings} following
             </Counts>
             {user?.uid !== props.currentUser && (
-              <FollowControl>
+              <FollowControl onClick={handleFollowClick}>
                 {alreadyFollowing ? 'Unfollow' : 'Follow'}
               </FollowControl>
             )}

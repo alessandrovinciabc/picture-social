@@ -32,8 +32,64 @@ async function getUser(uid: string) {
   return data;
 }
 
+async function getNumberOfFollowers(userId: string) {
+  let collection = db.collection('follower');
+  let ref = collection.where('following', '==', userId);
+
+  let queryResult = await ref.get();
+
+  return queryResult.size;
+}
+
+async function getNumberOfFollowings(userId: string) {
+  let collection = db.collection('follower');
+  let ref = collection.where('follower', '==', userId);
+
+  let queryResult = await ref.get();
+
+  return queryResult.size;
+}
+
+async function getFollowStatus(follower: string, following: string) {
+  let collection = db.collection('follower');
+  let followRef = collection
+    .where('follower', '==', follower)
+    .where('following', '==', following);
+
+  let followSnap = await followRef.get();
+  if (followSnap.empty) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
+async function toggleFollow(follower: string, following: string) {
+  let collection = db.collection('follower');
+  let followRef = collection
+    .where('follower', '==', follower)
+    .where('following', '==', following);
+
+  let followSnap = await followRef.get();
+  if (followSnap.empty) {
+    await collection.add({ follower, following });
+
+    return true;
+  } else {
+    followSnap.docs[0].ref.delete();
+
+    return false;
+  }
+}
+
 export default saveUserDetailsToDB;
 
-export { getUser };
+export {
+  getUser,
+  toggleFollow,
+  getFollowStatus,
+  getNumberOfFollowers,
+  getNumberOfFollowings,
+};
 
 export type { UserProfile };
