@@ -11,6 +11,8 @@ interface PostObject extends firebase.firestore.DocumentData {
   timestamp: firebase.firestore.Timestamp;
 }
 
+const MAX_AMOUNT_OF_FETCHES = 9;
+
 async function getPost(id: string) {
   let postSnapshot = await db.collection('post').doc(id).get();
 
@@ -29,13 +31,13 @@ async function getPostsForUser(
       .where('ownerId', '==', uid)
       .orderBy('timestamp', 'desc')
       .startAfter(startAfter)
-      .limit(6);
+      .limit(MAX_AMOUNT_OF_FETCHES);
   } else {
     queryRef = db
       .collection('post')
       .where('ownerId', '==', uid)
       .orderBy('timestamp', 'desc')
-      .limit(6);
+      .limit(MAX_AMOUNT_OF_FETCHES);
   }
 
   let resultOfQuery = await queryRef.get();
@@ -48,8 +50,23 @@ async function getPostsForUser(
   return posts;
 }
 
-async function getAllPosts() {
-  let querySnapshot = await db.collection('post').orderBy('timestamp').get();
+async function getAllPosts(startAfter?: firebase.firestore.DocumentSnapshot) {
+  let queryRef;
+
+  if (startAfter) {
+    queryRef = db
+      .collection('post')
+      .orderBy('timestamp')
+      .startAfter(startAfter)
+      .limit(MAX_AMOUNT_OF_FETCHES);
+  } else {
+    queryRef = db
+      .collection('post')
+      .orderBy('timestamp')
+      .limit(MAX_AMOUNT_OF_FETCHES);
+  }
+
+  let querySnapshot = await queryRef.get();
 
   let posts: firebase.firestore.DocumentData[] = [];
   querySnapshot.forEach((snap) => {

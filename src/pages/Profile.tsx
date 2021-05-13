@@ -120,7 +120,10 @@ function Profile(
     target.reset();
   };
 
+  let scrollBeingHandled = false;
   let scrollCallback = async () => {
+    if (scrollBeingHandled) return;
+    scrollBeingHandled = true;
     let lastPostId = posts[posts.length - 1].postId as string;
     let lastPostSnapshot = await post.getPost(lastPostId);
     if (!lastPostSnapshot) return;
