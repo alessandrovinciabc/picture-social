@@ -60,10 +60,6 @@ let AddPostButton = styled(Button)`
   width: 110px;
   margin: 0 auto;
   margin-top: 1rem;
-
-  &:hover::after {
-    content: ' +';
-  }
 `;
 
 function Profile(
@@ -158,7 +154,7 @@ function Profile(
           setAddFormVisibility((prev) => !prev);
         }}
       >
-        New Post
+        New Post+
       </AddPostButton>
       {addFormVisibility && <PostAddForm submitHandler={submitHandler} />}
       <PostGrid posts={posts} />
