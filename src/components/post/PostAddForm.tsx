@@ -1,6 +1,7 @@
 import { FormEventHandler } from 'react';
 
 import styled from 'styled-components';
+import BlueButton from '../BlueButton';
 import Button from '../Button';
 
 let PostForm = styled.form`
@@ -29,18 +30,7 @@ let ButtonContainer = styled.div`
   margin-top: 5px;
 `;
 
-let ConfirmPost = styled(Button)`
-  margin-right: 2px;
-  border-color: #0074d9;
-  background-color: #0074d9;
-  color: white;
-
-  &:hover {
-    background-color: #0074d9;
-
-    filter: saturate(50%) contrast(150%);
-  }
-`;
+let ConfirmPost = BlueButton;
 
 let CancelPost = styled(Button)`
   margin-left: 2px;
