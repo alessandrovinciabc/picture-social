@@ -83,6 +83,18 @@ let FollowControl = styled(BlueButton)`
   margin: 15px auto;
 `;
 
+function getUsersFromFollow(
+  querySnapshot: firebase.firestore.QuerySnapshot,
+  type: 'follower' | 'following'
+) {
+  let arr: firebase.firestore.DocumentData[] = [];
+  querySnapshot.forEach(async (follower) => {
+    let userSnap = await getUser(follower.data()[type]);
+    arr.push(userSnap);
+  });
+  return arr;
+}
+
 function Profile(
   props: React.PropsWithoutRef<{
     match: { params: { profile: string } };
@@ -113,6 +125,8 @@ function Profile(
     []
   );
 
+  let [followerUpdate, setFollowerUpdate] = useState(false);
+
   useEffect(() => {
     let isUnmounting = false;
     if (profileId == null) return;
@@ -134,20 +148,10 @@ function Profile(
         setNOfFollowings(newFollowings.size);
 
         setFollowers((prev) => {
-          let arr: firebase.firestore.DocumentData[] = [];
-          newFollowers.forEach(async (follower) => {
-            let userSnap = await getUser(follower.data().follower);
-            arr.push(userSnap);
-          });
-          return arr;
+          return getUsersFromFollow(newFollowers, 'follower');
         });
         setFollowings((prev) => {
-          let arr: firebase.firestore.DocumentData[] = [];
-          newFollowings.forEach(async (following) => {
-            let userSnap = await getUser(following.data().following);
-            arr.push(userSnap);
-          });
-          return arr;
+          return getUsersFromFollow(newFollowings, 'following');
         });
       }
     };
@@ -158,6 +162,35 @@ function Profile(
       isUnmounting = true;
     };
   }, [profileId, wasUpdated]);
+
+  //Update followers/following list when user follows/unfollows
+  useEffect(() => {
+    let isUnmounting = false;
+    if (!followerUpdate) return;
+    if (profileId == null) return;
+
+    let getNewStuffAndSetState = async () => {
+      let newFollowers = await getFollowers(profileId);
+      let newFollowings = await getFollowings(profileId);
+
+      if (isUnmounting) return;
+
+      setFollowers((prev) => {
+        return getUsersFromFollow(newFollowers, 'follower');
+      });
+      setFollowings((prev) => {
+        return getUsersFromFollow(newFollowings, 'following');
+      });
+
+      setFollowerUpdate(false);
+    };
+
+    getNewStuffAndSetState();
+
+    return () => {
+      isUnmounting = true;
+    };
+  }, [followerUpdate, profileId]);
 
   useEffect(() => {
     let isUnmounting = false;
@@ -214,7 +247,9 @@ function Profile(
   };
 
   let handleFollowClick = () => {
-    toggleFollow(props.currentUser, profileId);
+    toggleFollow(props.currentUser, profileId).then(() => {
+      setFollowerUpdate(true);
+    });
     setAlreadyFollowing((prev) => {
       if (prev) {
         setNOfFollowers((prev) => prev - 1);
