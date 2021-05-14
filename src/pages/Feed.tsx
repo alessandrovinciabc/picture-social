@@ -45,7 +45,7 @@ const Feed: React.FC<{ currentUser: string }> = (props) => {
   return (
     <Container>
       {postsToShow.length === 0
-        ? 'No posts to show here! Try to follow someone'
+        ? 'No posts to show here!'
         : postsToShow.map((post) => {
             return (
               <Post

@@ -106,6 +106,13 @@ function Profile(
   let [followerModal, setFollowerModal] = useState(false);
   let [followingModal, setFollowingModal] = useState(false);
 
+  let [followers, setFollowers] = useState<firebase.firestore.DocumentData[]>(
+    []
+  );
+  let [followings, setFollowings] = useState<firebase.firestore.DocumentData[]>(
+    []
+  );
+
   useEffect(() => {
     let isUnmounting = false;
     if (props.currentUser == null) return;
@@ -115,8 +122,8 @@ function Profile(
       let newUser = await getUser(profileId);
 
       let newPostCount = await post.getNumberOfPosts(profileId);
-      let followers = await getFollowers(profileId);
-      let followings = await getFollowings(profileId);
+      let newFollowers = await getFollowers(profileId);
+      let newFollowings = await getFollowings(profileId);
 
       let isFollowing = await getFollowStatus(props.currentUser, profileId);
 
@@ -125,8 +132,25 @@ function Profile(
         setUser(newUser);
 
         setPostCount(newPostCount);
-        setNOfFollowers(followers.size);
-        setNOfFollowings(followings.size);
+        setNOfFollowers(newFollowers.size);
+        setNOfFollowings(newFollowings.size);
+
+        setFollowers((prev) => {
+          let arr: firebase.firestore.DocumentData[] = [];
+          newFollowers.forEach(async (follower) => {
+            let userSnap = await getUser(follower.data().follower);
+            arr.push(userSnap);
+          });
+          return arr;
+        });
+        setFollowings((prev) => {
+          let arr: firebase.firestore.DocumentData[] = [];
+          newFollowings.forEach(async (following) => {
+            let userSnap = await getUser(following.data().following);
+            arr.push(userSnap);
+          });
+          return arr;
+        });
 
         setAlreadyFollowing(isFollowing);
       }
@@ -197,7 +221,9 @@ function Profile(
           onClose={() => {
             setFollowerModal(false);
           }}
-          title="Your Followers"
+          title="Followers"
+          content={followers}
+          viewerId={props.currentUser}
         />
       )}
       {followingModal && (
@@ -205,7 +231,9 @@ function Profile(
           onClose={() => {
             setFollowingModal(false);
           }}
-          title="People you follow"
+          title="Following"
+          content={followings}
+          viewerId={props.currentUser}
         />
       )}
       <ProfileSection>
@@ -230,7 +258,7 @@ function Profile(
                 {nOfFollowings} following
               </FollowCount>
             </Counts>
-            {user?.uid !== props.currentUser && (
+            {user?.uid !== props.currentUser && user != null && (
               <FollowControl onClick={handleFollowClick}>
                 {alreadyFollowing ? 'Unfollow' : 'Follow'}
               </FollowControl>
@@ -238,13 +266,16 @@ function Profile(
           </ProfileDetails>
         </ProfileGroup>
       </ProfileSection>
-      <AddPostButton
-        onClick={() => {
-          setAddFormVisibility((prev) => !prev);
-        }}
-      >
-        New Post+
-      </AddPostButton>
+      {props.currentUser === user?.uid && (
+        <AddPostButton
+          onClick={() => {
+            setAddFormVisibility((prev) => !prev);
+          }}
+        >
+          New Post+
+        </AddPostButton>
+      )}
+
       {addFormVisibility && <PostAddForm submitHandler={submitHandler} />}
       <PostGrid posts={posts} />
     </Container>

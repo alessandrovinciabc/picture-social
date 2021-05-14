@@ -1,6 +1,10 @@
 import React from 'react';
 
+import firebase from 'firebase/app';
+
 import styled from 'styled-components';
+
+import UserListItem from './UserListItem';
 
 let BackDrop = styled.div`
   position: absolute;
@@ -26,7 +30,7 @@ let MainContainer = styled.div`
   background-color: white;
 
   height: 400px;
-  width: 360px;
+  width: 340px;
 
   border-radius: 20px;
 
@@ -71,7 +75,12 @@ let CloseButton = styled.button`
 
 let Content = styled.div``;
 
-const ListModal: React.FC<{ onClose?: Function; title: string }> = (props) => {
+const ListModal: React.FC<{
+  onClose?: Function;
+  title: string;
+  content: firebase.firestore.DocumentData[];
+  viewerId: string;
+}> = (props) => {
   return (
     <>
       <BackDrop
@@ -88,7 +97,20 @@ const ListModal: React.FC<{ onClose?: Function; title: string }> = (props) => {
             }}
           />
         </TitleSection>
-        <Content></Content>
+        <Content>
+          {props.content.length > 0
+            ? props.content.map((user) => (
+                <UserListItem
+                  key={user.uid}
+                  userObj={user}
+                  viewerId={props.viewerId}
+                  afterLink={() => {
+                    props.onClose?.();
+                  }}
+                />
+              ))
+            : null}
+        </Content>
       </MainContainer>
     </>
   );
