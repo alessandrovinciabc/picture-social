@@ -99,13 +99,13 @@ async function getAllPosts(startAfter?: firebase.firestore.DocumentSnapshot) {
   if (startAfter) {
     queryRef = db
       .collection('post')
-      .orderBy('timestamp')
+      .orderBy('timestamp', 'desc')
       .startAfter(startAfter)
       .limit(MAX_AMOUNT_OF_FETCHES);
   } else {
     queryRef = db
       .collection('post')
-      .orderBy('timestamp')
+      .orderBy('timestamp', 'desc')
       .limit(MAX_AMOUNT_OF_FETCHES);
   }
 
