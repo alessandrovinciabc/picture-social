@@ -42,7 +42,9 @@ async function getPostsForFeed(userId: string) {
     if (data.length > 0) combined.push(...data);
   } while (arrayOfIds.length > 10);
 
-  return combined.sort((a, b) => (a.timestamp > b.timestamp ? 1 : -1));
+  return combined.sort((a, b) =>
+    a.timestamp.toMillis() > b.timestamp.toMillis() ? 1 : -1
+  );
 }
 
 async function getNumberOfPosts(userId: string) {

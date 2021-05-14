@@ -49,6 +49,7 @@ const Feed: React.FC<{ currentUser: string }> = (props) => {
         : postsToShow.map((post) => {
             return (
               <Post
+                key={post.postId}
                 isOwner={props.currentUser === post.ownerId}
                 post={post}
                 viewerId={props.currentUser}
