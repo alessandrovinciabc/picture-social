@@ -20,6 +20,7 @@ import userIconPlaceholder from '../assets/images/user-icon-placeholder.png';
 import Button from '../components/Button';
 import handleScroll from '../helper/scroll';
 import BlueButton from '../components/BlueButton';
+import ListModal from '../components/ListModal';
 
 let Container = styled.div`
   overflow: auto;
@@ -57,10 +58,19 @@ let Name = styled.div`
 
 let Counts = styled.div`
   display: flex;
-  justify-content: space-evenly;
   align-items: center;
 
-  font-size: 0.8rem;
+  flex-direction: column;
+
+  font-size: 1rem;
+`;
+
+let FollowCount = styled.span`
+  cursor: pointer;
+
+  &:hover {
+    font-weight: bold;
+  }
 `;
 
 let AddPostButton = styled(Button)`
@@ -92,6 +102,9 @@ function Profile(
   let [nOfFollowings, setNOfFollowings] = useState(0);
 
   let [alreadyFollowing, setAlreadyFollowing] = useState(false);
+
+  let [followerModal, setFollowerModal] = useState(false);
+  let [followingModal, setFollowingModal] = useState(false);
 
   useEffect(() => {
     let isUnmounting = false;
@@ -179,15 +192,43 @@ function Profile(
         handleScroll(e, canLoadMore, scrollCallback);
       }}
     >
+      {followerModal && (
+        <ListModal
+          onClose={() => {
+            setFollowerModal(false);
+          }}
+          title="Your Followers"
+        />
+      )}
+      {followingModal && (
+        <ListModal
+          onClose={() => {
+            setFollowingModal(false);
+          }}
+          title="People you follow"
+        />
+      )}
       <ProfileSection>
         <ProfileGroup>
           <ProfileIcon src={user ? user.photoURL : userIconPlaceholder} />
           <ProfileDetails>
             <Name>{user?.displayName}</Name>
             <Counts>
-              {postCount} posts
-              <br /> {nOfFollowers} followers
-              <br /> {nOfFollowings} following
+              <span>{postCount} posts</span>
+              <FollowCount
+                onClick={() => {
+                  setFollowerModal(true);
+                }}
+              >
+                {nOfFollowers} followers
+              </FollowCount>
+              <FollowCount
+                onClick={() => {
+                  setFollowingModal(true);
+                }}
+              >
+                {nOfFollowings} following
+              </FollowCount>
             </Counts>
             {user?.uid !== props.currentUser && (
               <FollowControl onClick={handleFollowClick}>
