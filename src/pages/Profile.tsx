@@ -115,7 +115,7 @@ function Profile(
 
   useEffect(() => {
     let isUnmounting = false;
-    if (props.currentUser == null) return;
+    if (profileId == null) return;
 
     let getPostsAndSetState = async () => {
       let newPosts = await post.getPostsForUser(profileId);
@@ -124,8 +124,6 @@ function Profile(
       let newPostCount = await post.getNumberOfPosts(profileId);
       let newFollowers = await getFollowers(profileId);
       let newFollowings = await getFollowings(profileId);
-
-      let isFollowing = await getFollowStatus(props.currentUser, profileId);
 
       if (!isUnmounting) {
         setPosts(newPosts);
@@ -151,8 +149,6 @@ function Profile(
           });
           return arr;
         });
-
-        setAlreadyFollowing(isFollowing);
       }
     };
 
@@ -161,7 +157,26 @@ function Profile(
     return () => {
       isUnmounting = true;
     };
-  }, [profileId, wasUpdated, props.currentUser]);
+  }, [profileId, wasUpdated]);
+
+  useEffect(() => {
+    let isUnmounting = false;
+    if (props.currentUser == null) return;
+
+    let fetchAndSetState = async () => {
+      let isFollowing = await getFollowStatus(props.currentUser, profileId);
+
+      if (isUnmounting) return;
+
+      setAlreadyFollowing(isFollowing);
+    };
+
+    fetchAndSetState();
+
+    return () => {
+      isUnmounting = true;
+    };
+  }, [props.currentUser, profileId]);
 
   let submitHandler: FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
@@ -258,11 +273,13 @@ function Profile(
                 {nOfFollowings} following
               </FollowCount>
             </Counts>
-            {user?.uid !== props.currentUser && user != null && (
-              <FollowControl onClick={handleFollowClick}>
-                {alreadyFollowing ? 'Unfollow' : 'Follow'}
-              </FollowControl>
-            )}
+            {props.currentUser != null &&
+              user != null &&
+              user.uid !== props.currentUser && (
+                <FollowControl onClick={handleFollowClick}>
+                  {alreadyFollowing ? 'Unfollow' : 'Follow'}
+                </FollowControl>
+              )}
           </ProfileDetails>
         </ProfileGroup>
       </ProfileSection>
