@@ -119,11 +119,11 @@ async function getAllPosts(startAfter?: firebase.firestore.DocumentSnapshot) {
   return posts;
 }
 
-async function uploadImage(file: File, postId: string) {
+async function uploadImage(file: File, postId: string, userId: string) {
   let storageRef = storage.ref();
 
   let extension = file.type.replace('image/', '');
-  let ref = storageRef.child(`${postId}.${extension}`);
+  let ref = storageRef.child(`${userId}.${postId}.${extension}`);
 
   await ref.put(file);
 
@@ -131,7 +131,7 @@ async function uploadImage(file: File, postId: string) {
 }
 
 async function createPost(uid: string) {
-  let newPostRef = await db.collection('post').add({ ownerId: uid });
+  let newPostRef = await db.collection('post').add({ ownerId: uid, text: '' });
 
   let newId = newPostRef.id;
   await newPostRef.update({ postId: newId });
@@ -202,7 +202,7 @@ async function uploadImageAndSendPost(uid: string, file: File, text: string) {
   let postRef = await createPost(uid);
   let postId = postRef.id;
 
-  let img = await uploadImage(file, postId);
+  let img = await uploadImage(file, postId, uid);
 
   await updatePost(postRef, img, text);
 }
