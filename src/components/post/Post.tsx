@@ -459,7 +459,7 @@ const Post: React.FC<{
                 onClick={() => {
                   if (user) {
                     posts.deletePost(post.postId).then(() => {
-                      window.location.reload();
+                      history.push(`/${props.viewerId}`);
                     });
                   }
                 }}

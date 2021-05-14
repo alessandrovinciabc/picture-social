@@ -47,7 +47,7 @@ const PostAddForm: React.FC<{
 }> = ({ submitHandler }) => {
   return (
     <PostForm onSubmit={submitHandler}>
-      <input type="file" name="file" required />
+      <input type="file" name="file" accept="image/*" required />
       <PostTextInput
         placeholder="Type something here... (optional)"
         autoComplete="off"
