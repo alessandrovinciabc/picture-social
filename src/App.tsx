@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import './setupFirebase';
-import firebase from 'firebase/app';
 
 import useLoginStatus from './firebase/hooks/auth';
-import { logout, getCurrentUser, login } from './firebase/auth';
+import { logout, login } from './firebase/auth';
 
 import Header from './components/Header';
 
@@ -17,12 +16,7 @@ import Explore from './pages/Explore';
 import Feed from './pages/Feed';
 
 function App() {
-  let loginStatus = useLoginStatus();
-  let [currentUser, setCurrentUser] = useState<firebase.User | null>(null);
-
-  useEffect(() => {
-    setCurrentUser(getCurrentUser());
-  }, [loginStatus]);
+  let [loginStatus, currentUser] = useLoginStatus();
 
   let handleLogout = () => {
     logout();

@@ -4,21 +4,26 @@ import { onAuthChange } from '../auth';
 
 import saveUserDetailsToDB from '../user';
 
-const useLoginStatus = () => {
-  let [isLogged, setIsLogged] = useState(false);
+import firebase from 'firebase/app';
+
+const useLoginStatus = (): [boolean, firebase.User | null] => {
+  let [state, setState] = useState<{
+    isLogged: boolean;
+    user: firebase.User | null;
+  }>({ isLogged: false, user: null });
 
   useEffect(() => {
     onAuthChange((user) => {
       if (user) {
-        setIsLogged(true);
+        setState({ isLogged: true, user });
         saveUserDetailsToDB(user);
       } else {
-        setIsLogged(false);
+        setState({ isLogged: false, user: null });
       }
     });
   }, []);
 
-  return isLogged;
+  return [state.isLogged, state.user];
 };
 
 export default useLoginStatus;

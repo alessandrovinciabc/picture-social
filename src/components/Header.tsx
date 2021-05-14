@@ -72,7 +72,7 @@ const Header: React.FC<{
     login: React.MouseEventHandler<HTMLButtonElement>;
     logout: React.MouseEventHandler<HTMLButtonElement>;
   };
-  user: firebase.User | null;
+  user: firebase.User | null | undefined;
   logged: boolean;
 }> = (props) => {
   let history = useHistory();

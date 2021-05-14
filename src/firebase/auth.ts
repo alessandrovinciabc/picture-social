@@ -18,8 +18,4 @@ function onAuthChange(callback: (user: firebase.User | null) => any) {
   auth.onAuthStateChanged(callback);
 }
 
-function getCurrentUser() {
-  return auth.currentUser;
-}
-
-export { login, logout, onAuthChange, getCurrentUser };
+export { login, logout, onAuthChange };

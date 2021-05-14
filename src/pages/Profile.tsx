@@ -102,6 +102,8 @@ function Profile(
   }>
 ) {
   let profileId = props.match.params.profile;
+  let [viewer, setViewer] =
+    useState<firebase.firestore.DocumentData | null>(null);
   let [user, setUser] = useState<firebase.firestore.DocumentData | null>(null);
   let [posts, setPosts] = useState<firebase.firestore.DocumentData[]>([]);
   let [wasUpdated, setWasUpdated] = useState(false);
@@ -125,11 +127,26 @@ function Profile(
     []
   );
 
-  let [followerUpdate, setFollowerUpdate] = useState(false);
+  //get viewer
+  useEffect(() => {
+    let isUnmounting = false;
+
+    let getViewerAndSetState = async () => {
+      let newViewer = await getUser(props.currentUser);
+
+      if (isUnmounting) return;
+      setViewer(newViewer);
+    };
+
+    getViewerAndSetState();
+
+    return () => {
+      isUnmounting = true;
+    };
+  });
 
   useEffect(() => {
     let isUnmounting = false;
-    if (profileId == null) return;
 
     let getPostsAndSetState = async () => {
       let newPosts = await post.getPostsForUser(profileId);
@@ -162,35 +179,6 @@ function Profile(
       isUnmounting = true;
     };
   }, [profileId, wasUpdated]);
-
-  //Update followers/following list when user follows/unfollows
-  useEffect(() => {
-    let isUnmounting = false;
-    if (!followerUpdate) return;
-    if (profileId == null) return;
-
-    let getNewStuffAndSetState = async () => {
-      let newFollowers = await getFollowers(profileId);
-      let newFollowings = await getFollowings(profileId);
-
-      if (isUnmounting) return;
-
-      setFollowers((prev) => {
-        return getUsersFromFollow(newFollowers, 'follower');
-      });
-      setFollowings((prev) => {
-        return getUsersFromFollow(newFollowings, 'following');
-      });
-
-      setFollowerUpdate(false);
-    };
-
-    getNewStuffAndSetState();
-
-    return () => {
-      isUnmounting = true;
-    };
-  }, [followerUpdate, profileId]);
 
   useEffect(() => {
     let isUnmounting = false;
@@ -247,14 +235,20 @@ function Profile(
   };
 
   let handleFollowClick = () => {
-    toggleFollow(props.currentUser, profileId).then(() => {
-      setFollowerUpdate(true);
-    });
+    toggleFollow(props.currentUser, profileId);
     setAlreadyFollowing((prev) => {
       if (prev) {
         setNOfFollowers((prev) => prev - 1);
+        setFollowers((prev) => {
+          let clone = JSON.parse(JSON.stringify(prev));
+
+          return clone.filter(
+            (user: firebase.firestore.DocumentData) => user.uid !== viewer!.uid
+          );
+        });
       } else {
         setNOfFollowers((prev) => prev + 1);
+        setFollowers((prev) => prev.concat(viewer!));
       }
       return !prev;
     });
