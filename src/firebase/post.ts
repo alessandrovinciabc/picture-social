@@ -178,8 +178,8 @@ async function getComments(postId: string) {
 
   let comments = await commentsRef.orderBy('timestamp').get();
 
-  let resultOfQuery: firebase.firestore.DocumentData[] = [];
-  comments.forEach(async (comment) => {
+  let resultOfQuery: firebase.firestore.DocumentData[] = Array(comments.size);
+  comments.docs.forEach(async (comment, index) => {
     let commentData = comment.data();
 
     let userThatCommented = await db
@@ -188,11 +188,11 @@ async function getComments(postId: string) {
       .get();
 
     let nameOfCommenter = userThatCommented.data()?.profile.displayName;
-    resultOfQuery.push({
+    resultOfQuery[index] = {
       ...commentData,
       displayName: nameOfCommenter,
       commentId: comment.id,
-    });
+    };
   });
 
   return resultOfQuery;
