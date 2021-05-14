@@ -1,5 +1,7 @@
 import firebase from 'firebase/app';
 
+import { getFollowings } from './user';
+
 let db = firebase.firestore();
 let storage = firebase.storage();
 
@@ -12,6 +14,36 @@ interface PostObject extends firebase.firestore.DocumentData {
 }
 
 const MAX_AMOUNT_OF_FETCHES = 9;
+
+async function getPostsForFeed(userId: string) {
+  let followings = await getFollowings(userId);
+
+  if (followings.size === 0) return null;
+
+  let arrayOfIds: string[] = [];
+  followings.forEach(async (user) => {
+    let id = user.data().following;
+    arrayOfIds.push(id);
+  });
+
+  let combined = [];
+  do {
+    let query = await db
+      .collection('post')
+      .where('ownerId', 'in', arrayOfIds.splice(0, 10))
+      .orderBy('timestamp')
+      .get();
+
+    let data: firebase.firestore.DocumentData[] = [];
+    query.forEach((el) => {
+      data.push(el.data());
+    });
+
+    if (data.length > 0) combined.push(...data);
+  } while (arrayOfIds.length > 10);
+
+  return combined.sort((a, b) => (a.timestamp > b.timestamp ? 1 : -1));
+}
 
 async function getNumberOfPosts(userId: string) {
   let snapshot = await db
@@ -247,6 +279,7 @@ async function togglePostLike(userId: string, postId: string) {
 }
 
 let defaultExport = {
+  getPostsForFeed,
   getNumberOfPosts,
   getPost,
   getPostsForUser,

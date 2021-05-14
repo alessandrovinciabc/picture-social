@@ -32,22 +32,22 @@ async function getUser(uid: string) {
   return data;
 }
 
-async function getNumberOfFollowers(userId: string) {
+async function getFollowers(userId: string) {
   let collection = db.collection('follower');
   let ref = collection.where('following', '==', userId);
 
   let queryResult = await ref.get();
 
-  return queryResult.size;
+  return queryResult;
 }
 
-async function getNumberOfFollowings(userId: string) {
+async function getFollowings(userId: string) {
   let collection = db.collection('follower');
   let ref = collection.where('follower', '==', userId);
 
   let queryResult = await ref.get();
 
-  return queryResult.size;
+  return queryResult;
 }
 
 async function getFollowStatus(follower: string, following: string) {
@@ -84,12 +84,6 @@ async function toggleFollow(follower: string, following: string) {
 
 export default saveUserDetailsToDB;
 
-export {
-  getUser,
-  toggleFollow,
-  getFollowStatus,
-  getNumberOfFollowers,
-  getNumberOfFollowings,
-};
+export { getUser, toggleFollow, getFollowStatus, getFollowers, getFollowings };
 
 export type { UserProfile };

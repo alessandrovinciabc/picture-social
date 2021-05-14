@@ -14,6 +14,7 @@ import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import Profile from './pages/Profile';
 import PostView from './pages/PostView';
 import Explore from './pages/Explore';
+import Feed from './pages/Feed';
 
 function App() {
   let loginStatus = useLoginStatus();
@@ -43,6 +44,13 @@ function App() {
           />
         </Route>
         <Switch>
+          <Route
+            path="/"
+            exact
+            component={(props: any) => (
+              <Feed {...props} currentUser={currentUser?.uid} />
+            )}
+          />
           <Route
             path="/p/:postId"
             exact

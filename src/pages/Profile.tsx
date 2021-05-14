@@ -10,8 +10,8 @@ import PostGrid from '../components/post/PostGrid';
 import styled from 'styled-components';
 import {
   getFollowStatus,
-  getNumberOfFollowers,
-  getNumberOfFollowings,
+  getFollowers,
+  getFollowings,
   getUser,
   toggleFollow,
 } from '../firebase/user';
@@ -102,8 +102,8 @@ function Profile(
       let newUser = await getUser(profileId);
 
       let newPostCount = await post.getNumberOfPosts(profileId);
-      let newFollowerCount = await getNumberOfFollowers(profileId);
-      let newFollowingCount = await getNumberOfFollowings(profileId);
+      let followers = await getFollowers(profileId);
+      let followings = await getFollowings(profileId);
 
       let isFollowing = await getFollowStatus(props.currentUser, profileId);
 
@@ -112,8 +112,8 @@ function Profile(
         setUser(newUser);
 
         setPostCount(newPostCount);
-        setNOfFollowers(newFollowerCount);
-        setNOfFollowings(newFollowingCount);
+        setNOfFollowers(followers.size);
+        setNOfFollowings(followings.size);
 
         setAlreadyFollowing(isFollowing);
       }
