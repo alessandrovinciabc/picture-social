@@ -9,6 +9,7 @@ interface UserProfile extends firebase.firestore.DocumentData {
 }
 
 async function saveUserDetailsToDB(user: firebase.User) {
+  user.reload();
   await db
     .collection('user')
     .doc(user.uid)
