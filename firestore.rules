@@ -2,14 +2,24 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
   
-    match /post/{doc=**} {
+  	match/post/{postId}/{anythingElse=**}{
+    	allow update, delete: if request.auth.uid ==
+      get(/databases/$(database)/documents/post/$(postId))
+      .data.ownerId;
+    }
+    
+    match /post/{post} {
       allow read: if true;
+      
       allow update, delete: if 
       request.auth.uid == resource.data.get('ownerId', false)
       ||
-      request.auth.uid == resource.data.userId;
+      request.auth.uid == resource.data.get('userId', false);
       
-      allow write: if request.resource.data.text.size() <= 280;
+      allow create: if request.resource.data.text.size() <= 280 &&
+      (request.auth.uid == resource.data.get('ownerId', false)
+      ||
+      request.auth.uid == resource.data.get('userId', false));
       
 
 
@@ -19,7 +29,7 @@ service cloud.firestore {
       }
       
       match /comments/{comment}{
-      	allow write:
+      	allow create, update:
         if request.auth.uid == request.resource.data.ownerId && 
         request.resource.data.text.size() <= 280;
       	allow delete: 

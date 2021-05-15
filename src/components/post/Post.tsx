@@ -492,7 +492,8 @@ const Post: React.FC<{
                   {comment.displayName}
                 </CommentProfileName>
                 <CommentText>{comment.text} </CommentText>
-                {props.viewerId === post.ownerId ? (
+                {props.viewerId === post.ownerId ||
+                props.viewerId === comment.ownerId ? (
                   <DeleteCommentBtn
                     onClick={handleCommentDelete}
                     data-commentid={comment.commentId}
