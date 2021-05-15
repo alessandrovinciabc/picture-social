@@ -174,7 +174,7 @@ let LikeCounter = styled.div`
 
   &::after {
     content: ${(props: { 'data-active': boolean; count: number }) =>
-      props.count ? `"${props.count}"` : '"0"'};
+      props.count ? `"${props.count > 99 ? '99+' : props.count}"` : '"0"'};
 
     font-size: 0.7rem;
     color: ${(props: { 'data-active': boolean; count: number }) =>
