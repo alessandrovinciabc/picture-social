@@ -17,9 +17,7 @@ service cloud.firestore {
       request.auth.uid == resource.data.get('userId', false);
       
       allow create: if request.resource.data.text.size() <= 280 &&
-      (request.auth.uid == resource.data.get('ownerId', false)
-      ||
-      request.auth.uid == resource.data.get('userId', false));
+      request.auth.uid == request.resource.data.get('ownerId', false);
       
 
 

@@ -133,9 +133,6 @@ async function uploadImage(file: File, postId: string, userId: string) {
 async function createPost(uid: string) {
   let newPostRef = await db.collection('post').add({ ownerId: uid, text: '' });
 
-  let newId = newPostRef.id;
-  await newPostRef.update({ postId: newId });
-
   return newPostRef;
 }
 
