@@ -43,7 +43,7 @@ async function getPostsForFeed(userId: string) {
   } while (arrayOfIds.length > 10);
 
   return combined.sort((a, b) =>
-    a.timestamp.toMillis() > b.timestamp.toMillis() ? 1 : -1
+    a.timestamp.toMillis() > b.timestamp.toMillis() ? -1 : 1
   );
 }
 
